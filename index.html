@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solar System Simulation</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+      #label-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* Let mouse events pass through */
+      }
+      .label {
+        color: #fff;
+        font-family: sans-serif;
+        padding: 2px;
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 4px;
+        pointer-events: auto; /* But allow interaction with labels if needed */
+      }
+      #controls {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        color: white;
+        font-family: 'Arial', sans-serif;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 15px 20px;
+        border-radius: 12px;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 100;
+      }
+
+      #controls label {
+        color: #ffffff;
+        font-size: 14px;
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+        margin-right: 5px;
+      }
+
+      #toggle-labels, #toggle-axes {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #4a9eff;
+      }
+
+      #pause-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      #pause-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      #pause-button:hover .button-icon {
+        transform: scale(1.1);
+      }
+
+      #pause-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+      }
+
+      #pause-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .controls-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .speed-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .speed-label {
+        white-space: nowrap;
+      }
+
+      .speed-slider {
+        width: 100px;
+      }
+
+      .speed-value {
+        min-width: 30px;
+        font-size: 12px;
+      }
+
+      #pause-button:hover::before {
+        left: 100%;
+      }
+
+      #pause-button.resumed {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+      }
+
+      #pause-button.resumed:hover {
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+      }
+
+      #pause-button.resumed:hover .button-icon {
+        transform: scale(1.1);
+      }
+
+      .button-icon {
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+      }
+
+      .button-text {
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      #camera-position {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      #camera-position:hover {
+        background: rgba(255,255,255,0.15);
+        border-color: rgba(255,255,255,0.3);
+      }
+
+      #camera-position option {
+        background: #2a2a2a;
+        color: white;
+        padding: 4px;
+      }
+
+      #camera-position option:hover {
+        background: #3a3a3a;
+      }
+
+      #view-preset-select {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 5px;
+      }
+
+      #view-preset-select:hover {
+        background: rgba(255,255,255,0.15);
+        border-color: rgba(255,255,255,0.3);
+      }
+
+      #view-preset-select option {
+        background: #2a2a2a;
+        color: white;
+        padding: 4px;
+      }
+
+      #view-presets {
+        background: rgba(0,0,0,0.2);
+        padding: 8px;
+        border-radius: 4px;
+        margin: 5px 0;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: none;
+        margin-top: 5px;
+      }
+
+      #speed-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      #speed-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+      }
+
+      #speed-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+      }
+
+      #speed-slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      #speed-slider::-moz-range-thumb:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+      }
+
+      #speed-slider::-moz-range-track {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        border: none;
+      }
+
+      #reset-speed {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+      }
+
+      #reset-speed:hover {
+        background: rgba(255,255,255,0.15);
+        border-color: rgba(255,255,255,0.3);
+        transform: translateY(-1px);
+      }
+
+      #reset-speed:active {
+        transform: translateY(0);
+        background: rgba(102, 126, 234, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+    <div id="controls">
+      <div class="controls-left">
+        <input type="checkbox" id="toggle-labels" checked />
+        <label for="toggle-labels">Labels</label>
+        <input type="checkbox" id="toggle-axes" checked />
+        <label for="toggle-axes">Axes</label>
+        <label for="camera-position">Camera:</label>
+        <select id="camera-position">
+          <option value="default">Default</option>
+          <option value="Mercury">Mercury</option>
+          <option value="Venus">Venus</option>
+          <option value="Earth">Earth</option>
+          <option value="Mars">Mars</option>
+          <option value="Jupiter">Jupiter</option>
+          <option value="Saturn">Saturn</option>
+          <option value="Uranus">Uranus</option>
+          <option value="Neptune">Neptune</option>
+          <option value="Sun">Sun</option>
+          <option value="Moon">Moon</option>
+        </select>
+        <div id="view-presets">
+          <label for="view-preset-select">View:</label>
+          <select id="view-preset-select">
+            <option value="rear">Rear View</option>
+            <option value="outer">Outer Side View</option>
+            <option value="front">Front View</option>
+            <option value="inner">Inner Side View</option>
+            <option value="top">Top View</option>
+          </select>
+        </div>
+        <div class="speed-controls">
+          <label for="speed-slider" class="speed-label">Speed:</label>
+          <input type="range" id="speed-slider" class="speed-slider" min="0" max="100" step="1" value="50">
+          <span id="speed-value" class="speed-value">1.0x</span>
+          <button id="reset-speed" type="button">Reset 1x</button>
+        </div>
+      </div>
+      <button id="pause-button" type="button">
+        <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+        <span class="button-text">Pause</span>
+      </button>
+    </div>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
