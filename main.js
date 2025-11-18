@@ -619,6 +619,17 @@ function animate() {
   labelRenderer.render(scene, camera);
 }
 
+// Hide loading spinner on first render
+const loadingSpinner = document.getElementById('loading-spinner');
+if (loadingSpinner && !loadingSpinner.classList.contains('hidden')) {
+  loadingSpinner.classList.add('hidden');
+  setTimeout(() => {
+    if (loadingSpinner.parentNode) {
+      loadingSpinner.parentNode.removeChild(loadingSpinner);
+    }
+  }, 500);
+}
+
 animate();
 
 // Mouse button reset zoom
