@@ -2,6 +2,8 @@
 
 This is an interactive 3D solar system simulator created using the three.js library. It showcases the Sun and the eight planets of the solar system (Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune), as well as Earth's satellite (the Moon), with realistic textures and simulated orbital and rotational movements.
 
+**Live Demo**: [https://gouzhuang.github.io/solar-system/](https://gouzhuang.github.io/solar-system/)
+
 ## Key Features
 
 - **Accurate Physics Simulation**: All celestial bodies have fixed axial tilts based on real astronomical data, ensuring physical accuracy.
