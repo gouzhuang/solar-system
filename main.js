@@ -405,6 +405,17 @@ function restoreCameraParameters() {
 // Function to update camera position based on selected target
 function updateCameraPosition(newTarget) {
   if (currentCameraTarget === newTarget) return;
+
+  // Remove existing wheel event listener if any
+  const existingWheelHandler = eventListeners.find(item =>
+    item.element === renderer.domElement && item.event === 'wheel'
+  );
+  if (existingWheelHandler) {
+    renderer.domElement.removeEventListener('wheel', existingWheelHandler.handler, existingWheelHandler.options);
+    const index = eventListeners.indexOf(existingWheelHandler);
+    if (index > -1) eventListeners.splice(index, 1);
+  }
+
   currentCameraTarget = newTarget;
   // Reset start time, zoomFactor and smoothingFactor when switching celestial bodies
   cameraParams.trackTime = Date.now();
@@ -417,6 +428,7 @@ function updateCameraPosition(newTarget) {
     controls.enabled = true;
     cameraTargetObject = null;
     restoreCameraParameters();
+    // Don't register wheel handler in default mode - let OrbitControls handle it
   } else {
     viewPresetsDiv.style.display = 'block';  // Show preset view selector
     // Switching to follow a celestial body - save current parameters first
@@ -430,6 +442,9 @@ function updateCameraPosition(newTarget) {
     if (targetBody) {
       cameraTargetObject = targetBody;
       controls.enabled = false; // Disable OrbitControls when following
+      // Register wheel handler for follow mode zoom
+      renderer.domElement.addEventListener('wheel', handleWheelZoom, { passive: false });
+      eventListeners.push({ element: renderer.domElement, event: 'wheel', handler: handleWheelZoom, options: { passive: false } });
     }
   }
 }
@@ -533,12 +548,8 @@ function addEventListenerWithCleanup(element, event, handler, options) {
 
 // Mouse wheel zoom handling function (only valid in camera follow mode)
 function handleWheelZoom(event) {
-  // only valid in camera follow mode
-  if (currentCameraTarget === 'default') {
-    return;
-  }
-
-  event.preventDefault(); // prefent default scroll action
+  // This function is only registered when in follow mode, so we can handle zoom directly
+  event.preventDefault();
 
   // Calculate scaling factor
   const wheelDelta = event.deltaY;
@@ -654,8 +665,8 @@ function cleanupEventListeners() {
   eventListeners.length = 0;
 }
 
-// Register mouse wheel and mouse button events (need to be done after renderer creation)
-addEventListenerWithCleanup(renderer.domElement, 'wheel', handleWheelZoom, { passive: false });
+// Register mouse button events (wheel events are handled dynamically based on camera mode)
+// addEventListenerWithCleanup(renderer.domElement, 'wheel', handleWheelZoom, { passive: false });
 addEventListenerWithCleanup(renderer.domElement, 'mousedown', handleMouseButtonReset);
 
 // Clean up resources when page unloads
