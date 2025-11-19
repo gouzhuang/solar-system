@@ -141,33 +141,48 @@ const labels = [];
 const rotationAxes = [];
 const fixedAxisContainers = [];
 
+// Shared Geometries and Materials
+const sharedSphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+
+// Shared Orbit Geometry (Unit Circle on XZ plane)
+const orbitPoints = [];
+const orbitSegments = 128;
+for (let i = 0; i <= orbitSegments; i++) {
+  const theta = (i / orbitSegments) * Math.PI * 2;
+  orbitPoints.push(new THREE.Vector3(Math.cos(theta), 0, Math.sin(theta)));
+}
+const sharedOrbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+const sharedOrbitMaterial = new THREE.LineBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.5 });
+
+// Shared Axis Geometry (Unit Line along Y axis, length 1, centered at 0)
+const axisPoints = [
+  new THREE.Vector3(0, -0.5, 0),
+  new THREE.Vector3(0, 0.5, 0)
+];
+const sharedAxisGeometry = new THREE.BufferGeometry().setFromPoints(axisPoints);
+
 // Function to create a rotation axis
 function createRotationAxis(radius, color = 0xff0000) {
-  // Create a line from south pole to north pole using BufferGeometry
-  const axisLength = radius * 2 * 1.2; // Diameter * 1.2
-  const halfLength = axisLength / 2;
-
-  const points = [
-    new THREE.Vector3(0, -halfLength, 0), // South pole
-    new THREE.Vector3(0, halfLength, 0)   // North pole
-  ];
-
-  const axisGeometry = new THREE.BufferGeometry().setFromPoints(points);
   const axisMaterial = new THREE.LineBasicMaterial({
     color: color,
     transparent: false,
     linewidth: 1
   });
 
-  return new THREE.Line(axisGeometry, axisMaterial);
+  const axis = new THREE.Line(sharedAxisGeometry, axisMaterial);
+  // Original length was radius * 2 * 1.2 = radius * 2.4
+  // Shared geometry length is 1. So scale Y by radius * 2.4
+  axis.scale.set(1, radius * 2.4, 1);
+  return axis;
 }
 
 // Sun
-const sunGeometry = new THREE.SphereGeometry(2, 32, 32);
 const sunTexture = loadTexture('textures/2k_sun.jpg', 0xffff00);
 const sunMaterial = new THREE.MeshBasicMaterial({ map: sunTexture });
-const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+const sun = new THREE.Mesh(sharedSphereGeometry, sunMaterial);
+sun.scale.set(2, 2, 2);
 const sunLabel = createLabel('Sun');
+// the default position is (0, 0, 0), that is what we want, so no need to set position here
 sun.add(sunLabel);
 labels.push(sunLabel);
 scene.add(sun);
@@ -199,15 +214,15 @@ const planetAxisColors = {
 const planets = [];
 
 planetsData.forEach(planetData => {
-  const planetGeometry = new THREE.SphereGeometry(planetData.radius, 32, 32);
   const planetTexture = loadTexture(`textures/${planetData.texture}`);
   const planetMaterial = new THREE.MeshStandardMaterial({ map: planetTexture });
-  const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+  const planet = new THREE.Mesh(sharedSphereGeometry, planetMaterial);
+  planet.scale.set(planetData.radius, planetData.radius, planetData.radius);
   planet.name = planetData.name;
   planet.castShadow = true;
   planet.receiveShadow = true;
   const planetLabel = createLabel(planetData.name);
-  planetLabel.position.set(0, planetData.radius * 1.5 + 0.5, 0);
+  planetLabel.position.set(0, 1.5, 0);
   planet.add(planetLabel);
   labels.push(planetLabel);
 
@@ -232,6 +247,13 @@ planetsData.forEach(planetData => {
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);
     ring.rotation.x = Math.PI / 2;
     ring.receiveShadow = true;
+
+    // Saturn is scaled by 3.5 (radius). The ring geometry is defined with innerRadius 4 and outerRadius 6.
+    // If we add it directly to the scaled planet, the ring will be huge (4*3.5 = 14 inner radius).
+    // We need to scale the ring down by 1/planetData.radius to counteract the parent's scale.
+    const ringScale = 1 / planetData.radius;
+    ring.scale.set(ringScale, ringScale, ringScale);
+
     planet.add(ring);
   }
 
@@ -271,15 +293,8 @@ planetsData.forEach(planetData => {
   });
 
   // Orbit
-  const orbitPoints = [];
-  const orbitSegments = 128;
-  for (let i = 0; i <= orbitSegments; i++) {
-    const theta = (i / orbitSegments) * Math.PI * 2;
-    orbitPoints.push(new THREE.Vector3(Math.cos(theta) * planetData.distance, 0, Math.sin(theta) * planetData.distance));
-  }
-  const orbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
-  const orbitMaterial = new THREE.LineBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.5 });
-  const orbit = new THREE.LineLoop(orbitGeometry, orbitMaterial);
+  const orbit = new THREE.LineLoop(sharedOrbitGeometry, sharedOrbitMaterial);
+  orbit.scale.set(planetData.distance, 1, planetData.distance);
   scene.add(orbit);
 });
 
@@ -293,17 +308,17 @@ const moonData = {
   orbitalInclination: 5.14 * (Math.PI / 180) // Orbital inclination
 };
 
-const moonGeometry = new THREE.SphereGeometry(0.27, 32, 32);
 const moonTexture = loadTexture('textures/2k_moon.jpg');
 const moonMaterial = new THREE.MeshStandardMaterial({ map: moonTexture });
-const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+const moon = new THREE.Mesh(sharedSphereGeometry, moonMaterial);
+moon.scale.set(0.27, 0.27, 0.27);
 moon.castShadow = true;
 moon.receiveShadow = true;
 // The moon's local position should be at the origin of its fixed-axis container.
 // We set the orbital distance on the fixed container to avoid double-offsetting the moon.
 moon.position.set(0, 0, 0);
 const moonLabel = createLabel('Moon');
-moonLabel.position.set(0, 0.5, 0);
+moonLabel.position.set(0, 1.5, 0);
 moon.add(moonLabel);
 labels.push(moonLabel);
 
@@ -336,16 +351,8 @@ fixedAxisContainers.push(moonFixedAxisContainer);
 
 
 // Moon Orbit
-const moonOrbitPoints = [];
-const moonOrbitSegments = 64;
-for (let i = 0; i <= moonOrbitSegments; i++) {
-    const theta = (i / moonOrbitSegments) * Math.PI * 2;
-    moonOrbitPoints.push(new THREE.Vector3(Math.cos(theta) * 1.5, 0, Math.sin(theta) * 1.5));
-}
-
-const moonOrbitGeometry = new THREE.BufferGeometry().setFromPoints(moonOrbitPoints);
-const moonOrbitMaterial = new THREE.LineBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.5 });
-const moonOrbit = new THREE.LineLoop(moonOrbitGeometry, moonOrbitMaterial);
+const moonOrbit = new THREE.LineLoop(sharedOrbitGeometry, sharedOrbitMaterial);
+moonOrbit.scale.set(1.5, 1, 1.5);
 
 // Create a container for the moon orbit and apply orbital inclination
 const moonOrbitObject = new THREE.Object3D();
@@ -454,7 +461,7 @@ function updateCamera(targetObject, delta) {
   tempVectors.cameraTarget.set(0, 0, 0);
   targetObject.body.getWorldPosition(tempVectors.cameraTarget);
 
-  const radius = targetObject.body.geometry.parameters.radius;
+  const radius = targetObject.body.geometry.parameters.radius * targetObject.body.scale.x;
   const baseDistance = currentCameraTarget === 'Sun' ? 8 : 5;
   const planet = targetObject.planet;
 
