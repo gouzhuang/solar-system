@@ -37,11 +37,11 @@ let cameraTargetObject = null;
 
 // Multi-view preset configuration
 const VIEW_PRESETS = {
-  rear: { distance: 4, height: 1, angle: 0.5 * Math.PI, name: 'Rear View' },
-  outer: { distance: 4, height: 1, angle: 0, name: 'Outer Side View' },
-  front: { distance: 4, height: 1, angle: 1.5 * Math.PI, name: 'Front View' },
-  inner: { distance: 4, height: 1, angle: Math.PI, name: 'Inner Side View' },
-  top: { distance: 6, height: 3, angle: 0, name: 'Top View' }
+  rear: { distance: 4, height: 1, angle: 0.5 * Math.PI, name: 'Rear' },
+  outer: { distance: 4, height: 1, angle: 0, name: 'Outer' },
+  front: { distance: 4, height: 1, angle: 1.5 * Math.PI, name: 'Front' },
+  inner: { distance: 4, height: 1, angle: Math.PI, name: 'Inner' },
+  top: { distance: 6, height: 3, angle: 0, name: 'Top' }
 };
 let currentView = 'rear';
 
@@ -719,7 +719,6 @@ addEventListenerWithCleanup(toggleAxesCheckbox, 'change', handleToggleAxes);
 // Pause/Resume button
 const pauseButton = document.getElementById('pause-button');
 const buttonIcon = pauseButton.querySelector('.button-icon');
-const buttonText = pauseButton.querySelector('.button-text');
 
 function handlePauseClick() {
   isPaused = !isPaused;
@@ -729,12 +728,10 @@ function handlePauseClick() {
     pauseButton.classList.add('resumed');
     // Change to play icon
     buttonIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
-    buttonText.textContent = 'Resume';
   } else {
     pauseButton.classList.remove('resumed');
     // Change to pause icon
     buttonIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-    buttonText.textContent = 'Pause';
   }
 
   if (!isPaused) {

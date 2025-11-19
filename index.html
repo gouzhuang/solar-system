@@ -68,20 +68,18 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        padding: 8px 16px;
-        border-radius: 25px;
-        font-size: 14px;
-        font-weight: 600;
+        padding: 10px;
+        border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
         position: relative;
         overflow: hidden;
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
       }
 
       #pause-button:hover {
@@ -154,12 +152,11 @@
       .button-icon {
         flex-shrink: 0;
         transition: all 0.3s ease;
+        width: 20px;
+        height: 20px;
       }
 
-      .button-text {
-        font-size: 12px;
-        font-weight: 600;
-      }
+
 
       #camera-position {
         background: rgba(255,255,255,0.1);
@@ -274,12 +271,15 @@
         background: rgba(255,255,255,0.1);
         color: white;
         border: 1px solid rgba(255,255,255,0.2);
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
+        padding: 8px;
+        border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
-        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
       }
 
       #reset-speed:hover {
@@ -291,6 +291,22 @@
       #reset-speed:active {
         transform: translateY(0);
         background: rgba(102, 126, 234, 0.2);
+      }
+
+      .reset-icon {
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+        width: 16px;
+        height: 16px;
+      }
+
+      #reset-speed:hover .reset-icon {
+        animation: reset-spin 0.5s ease-in-out;
+      }
+
+      @keyframes reset-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(-360deg); }
       }
 
       .github-button {
@@ -401,25 +417,28 @@
         <div id="view-presets">
           <label for="view-preset-select">View:</label>
           <select id="view-preset-select">
-            <option value="rear">Rear View</option>
-            <option value="outer">Outer Side View</option>
-            <option value="front">Front View</option>
-            <option value="inner">Inner Side View</option>
-            <option value="top">Top View</option>
+            <option value="rear">Rear</option>
+            <option value="outer">Outer</option>
+            <option value="front">Front</option>
+            <option value="inner">Inner</option>
+            <option value="top">Top</option>
           </select>
         </div>
         <div class="speed-controls">
           <label for="speed-slider" class="speed-label">Speed:</label>
           <input type="range" id="speed-slider" class="speed-slider" min="0" max="100" step="1" value="50">
           <span id="speed-value" class="speed-value">1.0x</span>
-          <button id="reset-speed" type="button">Reset 1x</button>
+          <button id="reset-speed" type="button" title="Reset speed to 1x">
+            <svg class="reset-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+            </svg>
+          </button>
         </div>
       </div>
       <button id="pause-button" type="button">
-        <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <svg class="button-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
         </svg>
-        <span class="button-text">Pause</span>
       </button>
     </div>
     <script type="importmap">
