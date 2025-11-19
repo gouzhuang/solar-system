@@ -381,6 +381,46 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+
+      /* Help button styles */
+      .help-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+
+      .help-button:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      .help-button:active {
+        transform: translateY(0) scale(0.95);
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+      }
+
+      .help-button svg {
+        width: 24px;
+        height: 24px;
+        fill: white;
+        transition: transform 0.3s ease;
+      }
+
+      .help-button:hover svg {
+        transform: scale(1.1);
+      }
     </style>
   </head>
   <body>
@@ -441,6 +481,11 @@
         </svg>
       </button>
     </div>
+    <button id="help-button" class="help-button" type="button" title="Show keyboard shortcuts (H)">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+      </svg>
+    </button>
     <script type="importmap">
       {
         "imports": {

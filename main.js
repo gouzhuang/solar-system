@@ -740,6 +740,10 @@ function handlePauseClick() {
 }
 addEventListenerWithCleanup(pauseButton, 'click', handlePauseClick);
 
+// Help button
+const helpButton = document.getElementById('help-button');
+addEventListenerWithCleanup(helpButton, 'click', toggleHelpDialog);
+
 // Camera position selector
 const cameraPositionSelect = document.getElementById('camera-position');
 function handleCameraPositionChange(e) {
